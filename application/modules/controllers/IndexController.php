@@ -32,15 +32,9 @@
  *
  */
 
-/**
- *  Define Pathways for the application and its support files
- *  @global string PATH_TO_APPLICATION
- *  @global string PATH_TO_LIBRARY
- *  @global string PATH_TO_MODULES
- */
-
-define('PATH_TO_APPLICATION', './application/');
-define('PATH_TO_LIBRARY', PATH_TO_APPLICATION.'library/');
-define('PATH_TO_MODULES', PATH_TO_MODULES.'modules/');
-
-?>
+class IndexController extends Zend_Controller_Action
+{
+	public function indexAction() {
+	  return;
+	}
+}

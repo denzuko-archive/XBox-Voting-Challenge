@@ -1,11 +1,13 @@
 <?php
 /***
- * XBox Voting Application - {@version}
+ * XBox Voting Application
+ * @version 1.0.0
  * A Code Challenge for Nerdery.com - PHP Backend, Revision 4.0
  * Tracks interest in new games for the Xbox360 Console.
  * 
- * Created by Dwight Spencer (Denzuko) <denzuko.co.cc> on 201204.17
- * Copyrighted (C)2012 Dwight Spencer. All Rights Reserved.
+ * @author Dwight Spencer (Denzuko) <denzuko.co.cc>
+ * @copyright Copyrighted (C)2012 Dwight Spencer.
+ * All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
  * modification, are permitted provided that the following conditions are met:
