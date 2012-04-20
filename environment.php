@@ -32,15 +32,23 @@
  *
  */
 
-require_once 'environment.php'; // Setup application environment
-require_once 'Zend/Loader/Autoloader.php';
+/**
+ *  Define Pathways for the application and its support files
+ *  @global string PATH_TO_APPLICATION
+ *  @global string PATH_TO_LIBRARY
+ *  @global string PATH_TO_MODULES
+ */
 
-$loader = Zend_Loader_AutoLoader::getInstance();
-$loader->registerNamespace('App_');
-//$loader;
+define('PATH_TO_APPLICATION', './application/');
+define('PATH_TO_LIBRARY', PATH_TO_APPLICATION.'library/');
+define('PATH_TO_MODULES', PATH_TO_APPLICATION.'modules/');
 
-$controller = Zend_Controller_Front::getInstance();
-$controller->addModuleDirectory(PATH_TO_MODULES)->dispatch();
+set_include_path(get_include_path().PATH_SEPARATOR.PATH_TO_APPLICATION);
+set_include_path(get_include_path().PATH_SEPARATOR.PATH_TO_LIBRARY);
 
-// vim:fenc=utf-8:nu:fdm=indent:fdn=1ft=php:ts=3:tw=79:ai:si:cin:sts=3:et:sw=2:
+/* error reporting */
+ini_set('display_errors',1);
+error_reporting(E_ALL|E_STRICT);
+
+/* vim:fenc=utf-8:nu:fdm=indent:fdn=1ft=php:ts=3:tw=79:ai:si:cin:sts=3:et:sw=2: */
 ?>

@@ -1,5 +1,6 @@
 <?php
-/***
+// vim:set fenc=utf-8 nu fdm=indent fdn=1 ft=php ts=3 tw=79 ai si sts=3 et sw=2:
+/**
  * XBox Voting Application
  * @version 1.0.0
  * A Code Challenge for Nerdery.com - PHP Backend, Revision 4.0
@@ -32,15 +33,43 @@
  *
  */
 
-require_once 'environment.php'; // Setup application environment
-require_once 'Zend/Loader/Autoloader.php';
+set_include_path(get_include_path().PATH_SEPARATOR."../lib");
+require_once 'PHPUnit/Autoload.php';
+require_once 'soap.php';
 
-$loader = Zend_Loader_AutoLoader::getInstance();
-$loader->registerNamespace('App_');
-//$loader;
+/**
+ * The main library unit test
+ * @package XboxVoting
+ * @author Dwight Spencer
+ */
+class XboxVotingTest extends PHPUnit_Framework_TestCase
+{
+	/**
+	 * Contains the XboxVoting instance
+	 * @var XboxVoting objInst
+	 */
+	private $objInst;
 
-$controller = Zend_Controller_Front::getInstance();
-$controller->addModuleDirectory(PATH_TO_MODULES)->dispatch();
+	protected function setUp()
+	{
+		$this->objInst = new XboxVoting;
+	}
 
-// vim:fenc=utf-8:nu:fdm=indent:fdn=1ft=php:ts=3:tw=79:ai:si:cin:sts=3:et:sw=2:
+	/**
+	 * User Key Authorization
+	 */
+	public function testValidUserKey()
+	{
+		try {
+			$this->assertTrue($this->objInst->validKey());
+			$this->objInst->api['key']="deadbeaf";
+			$this->assertFalse($this->objInst->validKey());
+		} catch (Exception $error) {
+			return;
+		}
+	}
+}
+
+$suite = new PHPUnit_Framework_TestSuite('XboxVotingTest');
+PHPUnit_TextUI_TestRunner::run($suite);
 ?>

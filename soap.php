@@ -1,5 +1,6 @@
 <?php
-/***
+// vim:set fenc=utf-8 nu fdm=indent fdn=1 ft=php ts=3 tw=79 ai si sts=3 et sw=2:
+/**
  * XBox Voting Application
  * @version 1.0.0
  * A Code Challenge for Nerdery.com - PHP Backend, Revision 4.0
@@ -32,15 +33,65 @@
  *
  */
 
-require_once 'environment.php'; // Setup application environment
-require_once 'Zend/Loader/Autoloader.php';
 
-$loader = Zend_Loader_AutoLoader::getInstance();
-$loader->registerNamespace('App_');
-//$loader;
+/**
+ * Syntax Sugar for the application Soap api
+ * @package XboxVoting
+ * @author Dwight Spencer
+ */
+class XboxVoting {
+   private $client;
+   public  $api;
+   
+   function __construct()
+   {
+      $this->api = array(
+         'version' => "v2",
+         'host'    => "xbox.sierrabravo.net",
+         'service' => 'xbox',
+         'key'     => "a5b67a25f070fab4688a9069f39cf542");
 
-$controller = Zend_Controller_Front::getInstance();
-$controller->addModuleDirectory(PATH_TO_MODULES)->dispatch();
+      $this->client = new SoapClient($this->url().".wsdl");
+  }
 
-// vim:fenc=utf-8:nu:fdm=indent:fdn=1ft=php:ts=3:tw=79:ai:si:cin:sts=3:et:sw=2:
+  /**
+   * Builds a url of the service api
+   * @return string
+   */
+   public function url()
+   {
+      return "http://".$this->api['host']."/".$this->api['version']."/".$this->api['service'];
+   }
+
+  /**
+   * Verifies if the provided User Key is authorized or not
+   * @return TRUE or FALSE if key is valid
+   */
+   public function validKey()
+   {
+      try {
+         return $this->client->checkKey($this->api['key']);
+      } catch(SoapFault $error) {
+         print("Could not connect to service: ".$error->getMessage());
+         throw Exection;
+      }
+  }
+
+  /**
+   * Get an array of games listed
+   * @return array
+   */
+   protected function games()
+   {
+      try {
+         if ($this->validKey()) {
+            $this->$client->getGames($this->api['key']);
+         } else {
+            throw new Exception("Not authorized or invalid user key");
+         }
+      } catch(SoapFault $e) {
+         throw new Exception("Could not connect to service: ".$e->getMessage());
+      }
+  }
+}
 ?>
