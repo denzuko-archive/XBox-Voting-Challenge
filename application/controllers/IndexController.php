@@ -1,18 +1,19 @@
 <?php
+require_once 'XboxVoting/soap.php';
 
 class IndexController extends Zend_Controller_Action
 {
+   protected $voter; // XboxVoting instance
 
     public function init()
     {
-        /* Initialize action controller here */
+      $this->voter = new XboxVoting();
     }
 
     public function indexAction()
     {
-        // action body
+      $this->games = $this->voter->getGames();
+      $this->render();
     }
-
-
 }
 

@@ -39,8 +39,31 @@
  *  @global string PATH_TO_MODULES
  */
 
-define('PATH_TO_APPLICATION', './application/');
-define('PATH_TO_LIBRARY', PATH_TO_APPLICATION.'library/');
-define('PATH_TO_MODULES', PATH_TO_MODULES.'modules/');
+// Set Error Reporting
+ini_set('display_errors',1);
+error_reporting(E_ALL|E_STRICT);
 
-?>
+// Define path to application directory
+
+// Define application environment
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));
+
+// Ensure library/ is on include_path
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath(APPLICATION_PATH . '/../library'),
+    get_include_path(),
+)));
+
+/** Zend_Application */
+require_once 'Zend/Application.php';
+
+// Create application, bootstrap, and run
+$application = new Zend_Application(
+    APPLICATION_ENV,
+    APPLICATION_PATH . '/configs/application.ini'
+);
+$application->bootstrap()
+            ->run();
+
+/* vim:fenc=utf-8:nu:fdm=indent:fdn=1ft=php:ts=3:tw=79:ai:si:cin:sts=3:et:sw=2: */

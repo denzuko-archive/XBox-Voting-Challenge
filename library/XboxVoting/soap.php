@@ -1,5 +1,5 @@
 <?php
-// vim:set fenc=utf-8 nu fdm=indent fdn=1 ft=php ts=3 tw=79 ai si sts=3 et sw=2:
+// vim:set fenc=utf-8 nu ft=php ts=3 tw=79 ai si sts=3 et sw=2:
 /**
  * XBox Voting Application
  * @version 1.0.0
@@ -35,30 +35,32 @@
 
 
 /**
- * Syntax Sugar for the application Soap api
+ * Syntax Sugar for the XBox Game Voting App Api
  * @package XboxVoting
  * @author Dwight Spencer
  */
 class XboxVoting {
+   private $api;
    private $client;
-   public  $api;
+   public  $games; // Store returned game list from the server
    
-   function __construct()
+   function __construct($key="a5b67a25f070fab4688a9069f39cf542")
    {
       $this->api = array(
          'version' => "v2",
          'host'    => "xbox.sierrabravo.net",
          'service' => 'xbox',
-         'key'     => "a5b67a25f070fab4688a9069f39cf542");
+         'key'     => $key);
 
       $this->client = new SoapClient($this->url().".wsdl");
+      $this->games  = $this->getGames();
   }
 
   /**
    * Builds a url of the service api
    * @return string
    */
-   public function url()
+   protected function url()
    {
       return "http://".$this->api['host']."/".$this->api['version']."/".$this->api['service'];
    }
@@ -81,17 +83,86 @@ class XboxVoting {
    * Get an array of games listed
    * @return array
    */
-   protected function games()
+   public function getGames()
    {
-      try {
-         if ($this->validKey()) {
-            $this->$client->getGames($this->api['key']);
-         } else {
-            throw new Exception("Not authorized or invalid user key");
-         }
-      } catch(SoapFault $e) {
-         throw new Exception("Could not connect to service: ".$e->getMessage());
-      }
+     try {
+		if ($this->validKey()) {
+			$games = $this->client->getGames($this->api['key']);
+		} else {
+			throw new Exception("Not authorized or invalid user key");
+		}
+     } catch(SoapFault $e) {
+      throw new Exception("Could not connect to service: ".$e->getMessage());
+     }
+	return $games;
   }
+
+  /**
+   * Prints each game
+   * @returns 
+   */
+   public function displayGames()
+   {
+      $games = $this->games();
+      if ($games != NULL) {
+        foreach ($games as &$game) { print game.'\n'; }
+      } else {
+        print "No games found.\n";
+      }
+   }
+
+  /**
+   * Add New Game
+   * @param string $title
+   * @return bool
+   */
+   public function newGame($title)
+   {
+      if($this->validKey())
+        return $this->client->addGame($this->api['key'], "Prototype");
+   }
+
+  /**
+   * Clear games
+   * @returns bool
+   */
+  public function clearGames()
+  {
+    try {
+      if($this->validKey()) {
+        foreach($this->games as $game) {
+          $this->client->clearGames($game->id);
+        }
+      }
+    } catch(SoapFault $e) {
+      throw new Exception("Could not clear games: ".$e->getMessage());
+    } catch(Exception $e) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Marks a title as owned
+   * @param integer $id
+   * @returns bool
+   */
+   public function ownTitle($id)
+   {
+      // Marks a game title as owned
+      if($this->validKey())
+         return $this->client->setGotIt($this->api['key'], $id);
+      return true;
+   }
+
+  /**
+   * Restricts to once per day
+   * @returns bool
+   */
+   protected function oncePerDay()
+   {
+      $now   = getdate();
+      $today = $now['wday'];
+      return (($today >= 0) || ($today <= 6)) ? true: false;
+   }
 }
-?>
