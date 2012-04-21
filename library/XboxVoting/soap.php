@@ -1,5 +1,5 @@
 <?php
-// vim:set fenc=utf-8 nu ft=php ts=3 tw=79 ai si sts=3 et sw=2:
+// vim:fenc=utf-8:nu:ft=php:ts=3:tw=79:ai:si:sts=3:et:sw=2:
 /**
  * XBox Voting Application
  * @version 1.0.0
@@ -11,28 +11,29 @@
  * All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- *  Redistributions of source code must retain the above copyright notice, 
- *  this list of conditions and the following disclaimer.
- *  Redistributions in binary form must reproduce the above copyright notice,
- *  this list of conditions and the following disclaimer in the documentation
- *  and/or other materials provided with the distribution.
+ *  1) Redistributions of source code must retain the above copyright 
+ *     notice, this list of conditions and the following disclaimer.
+ *  2) Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in 
+ *     the documentation and/or other materials provided with the 
+ *     distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+ * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
  */
-
 
 /**
  * Syntax Sugar for the XBox Game Voting App Api
@@ -40,12 +41,13 @@
  * @author Dwight Spencer
  */
 class XboxVoting {
-   private $api;
-   private $client;
-   public  $games; // Store returned game list from the server
+   private $api;    // Web Service details
+   private $client; // Internal SoapClient instance
+   public  $games;  // Cache returned game list from the server
    
    function __construct($key="a5b67a25f070fab4688a9069f39cf542")
    {
+      //TODO: Move above key out to a config file for security
       $this->api = array(
          'version' => "v2",
          'host'    => "xbox.sierrabravo.net",
@@ -53,16 +55,20 @@ class XboxVoting {
          'key'     => $key);
 
       $this->client = new SoapClient($this->url().".wsdl");
-      $this->games  = $this->getGames();
+      $this->games  = $this->getGames(); // Good place to use memcached
   }
 
   /**
    * Builds a url of the service api
    * @return string
    */
-   protected function url()
+   protected function url($ssl=false)
    {
-      return "http://".$this->api['host']."/".$this->api['version']."/".$this->api['service'];
+      $_url  = ($ssl==true) ? "https://" : "http://";
+      $_url .= $this->api['host']."/";
+      $_url .= $this->api['version']."/";
+      $_url .= $this->api['service'];
+      return $_url;
    }
 
   /**
@@ -74,8 +80,8 @@ class XboxVoting {
       try {
          return $this->client->checkKey($this->api['key']);
       } catch(SoapFault $error) {
-         print("Could not connect to service: ".$error->getMessage());
-         throw Exection;
+         throw new Exception("Could not connect to service: "
+         .$error->getMessage());
       }
   }
 
@@ -89,7 +95,7 @@ class XboxVoting {
 		if ($this->validKey()) {
 			$games = $this->client->getGames($this->api['key']);
 		} else {
-			throw new Exception("Not authorized or invalid user key");
+		   throw new Exception("Not authorized or invalid user key");
 		}
      } catch(SoapFault $e) {
       throw new Exception("Could not connect to service: ".$e->getMessage());
@@ -130,9 +136,7 @@ class XboxVoting {
   {
     try {
       if($this->validKey()) {
-        foreach($this->games as $game) {
-          $this->client->clearGames($game->id);
-        }
+        $this->client->clearGames();
       }
     } catch(SoapFault $e) {
       throw new Exception("Could not clear games: ".$e->getMessage());
