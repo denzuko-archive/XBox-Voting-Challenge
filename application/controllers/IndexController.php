@@ -15,7 +15,12 @@ class IndexController extends Zend_Controller_Action
     public function indexAction()
     {
       $this->view->games = $this->games;
+      $this->view->title = "Games List";
       $this->render();
+    }
+
+    public function newAction()
+    {
     }
 }
 
